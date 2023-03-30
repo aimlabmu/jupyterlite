@@ -9,7 +9,7 @@ If you're using a JupyterLite site, there isn't much to know. It works like a re
 server-backed JupyterLab site, except:
 
 - The list of kernels, usually visible from the _Launcher_ as different _Notebook_
-  flavors, will be different
+  flavors, will be different. See [the Kernels section below](#kernels).
 - Your data is written to in-browser storage
   - though you may be able to copy
 - None of your data leaves your browser unless...
@@ -66,22 +66,70 @@ execute code in the browser.
 ## Kernels
 
 JupyterLite Kernels implement [Jupyter Kernel Messaging][jkm] in the browser with the
-help of [`mock-socket`][mock-socket].
+help of [`mock-socket`][mock-socket] and [WebAssembly][webassembly], without relying on
+any external infrastructure.
+
+The JupyterLite contibutors develop and maintain the following kernels:
+
+- a Python kernel based on [Pyodide][pyodide]:
+  [https://github.com/jupyterlite/pyodide-kernel](https://github.com/jupyterlite/pyodide-kernel)
+- a JavaScript kernel running in a Web Worker, developed as part of the
+  `jupyterlite/jupyterlite` repository but distributed via the
+  `jupyterlite-javascript-kernel` package on PyPI
+- a Python kernel based on [Xeus Python][xeus-python]:
+  [https://github.com/jupyterlite/xeus-python-kernel](https://github.com/jupyterlite/xeus-python-kernel)
+
+There are a few more third-party in-browser kernels also compatible with JupyterLite.
+See this [GitHub discussion][github-discussion-kernels] for more information.
+
+Check out the [How-to Guides](../howto/index.md) of the documentation to learn how to
+use and configure kernels.
 
 [jkm]: https://jupyter-client.readthedocs.io/en/stable/messaging.html
 [mock-socket]: https://github.com/thoov/mock-socket
+[webassembly]: https://developer.mozilla.org/en-US/docs/WebAssembly
+[github-discussion-kernels]: https://github.com/jupyterlite/jupyterlite/discussions/968
+[pyodide]: https://pyodide.org
+[xeus-python]: https://github.com/jupyter-xeus/xeus-python
 
-### A Python kernel powered by Pyodide
+## Working with files
 
-By default JupyterLite ships with a Python kernel called Pyolite.
+By default the files you create in JupyterLite are stored in the browser's local storage
+(IndexedDB). They are not shared between different JupyterLite website unless they are
+deployed on the same domain, and you use the same browser.
 
-Pyolite is built on top of [pyodide], and includes `piplite`, a wrapper around
-[micropip] which supports [customized wheels sources](../howto/python/wheels.md).
+### Uploading files
 
-[pyodide]: https://github.com/pyodide/pyodide
-[micropip]: https://pyodide.org/en/latest/usage/api/micropip-api.html
+JupyterLite supports uploading files from your local machine to the browser's local
+storage. This can be achieved by dragging and dropping files from your local machine to
+the file browser, or by using the `Upload` button in the file browser.
 
-### JavaScript
+This is useful for example when you want to upload a dataset to use in a notebook, like
+a CSV file.
 
-By default JupyterLite also ships with a simple JavaScript kernel that runs in an
-`IFrame`.
+However please note that the browser's local storage has a limited capacity, and you
+might not be able to upload large files. But smaller files up to ~50MB should be fine.
+
+```{note}
+To learn more about the browser's storage limits, check out the [browser storage][browser-storage] reference page on MDN.
+```
+
+[browser-storage]:
+  https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria
+
+### Accessing existing files
+
+Some JupyterLite deployments might provide access to some files by default. These files
+are stored as static assets on the server, and are made available to the user via the
+JupyterLite file browser. They can be edited, but the changes are not saved back to the
+server. Instead a local copy is created in the browser's local storage just like when
+creating a new file.
+
+```{note}
+If you would like to revert to the original file, you can delete the local copy.
+This can be achieved by right-clicking on the file in the file browser and selecting `Delete`.
+```
+
+```{note}
+If you are a site deployer, check out the [guide](../howto/content/files.md) to learn how to make files available to users.
+```
